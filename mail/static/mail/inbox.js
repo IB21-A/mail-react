@@ -6,6 +6,9 @@ document.addEventListener('DOMContentLoaded', function() {
   document.querySelector('#archived').addEventListener('click', () => load_mailbox('archive'));
   document.querySelector('#compose').addEventListener('click', compose_email);
 
+  // Add click event listener to email send button
+  document.querySelector('#send-email').addEventListener('click', send_email);
+
   // By default, load the inbox
   load_mailbox('inbox');
 });
@@ -23,6 +26,23 @@ function compose_email() {
   document.querySelector('#compose-body').value = '';
 }
 
+function send_email() {
+  
+  fetch('/emails', {
+    method: 'POST',
+    body: JSON.stringify({
+        recipients: document.querySelector('#compose-recipients').value,
+        subject: document.querySelector('#compose-subject').value,
+        body: document.querySelector('#compose-body').value
+    })
+  })
+  .then(response => response.json())
+  .then(result => {
+      // Print result
+      console.log(result);
+  });
+}
+
 function load_mailbox(mailbox) {
   
   // Show the mailbox and hide other views
@@ -35,7 +55,7 @@ function load_mailbox(mailbox) {
 
   // TODO (need to separate these later by button press)
   // Get emails 
-  console.log(mailbox);
+  console.log('mailbox type: ', mailbox);
   fetch(`emails/${mailbox}`)
   .then(response => response.json())
   .then(emails => {
@@ -73,6 +93,8 @@ function load_message(id) {
   document.querySelector('#message-view').style.display = 'block';
   document.querySelector('#compose-view').style.display = 'none';
 
+ 
+
   fetch(`emails/${id}`)
   .then(response => response.json())
   .then(message => {
@@ -80,7 +102,26 @@ function load_message(id) {
     document.querySelector('.message-to').innerHTML = message.recipients;
     document.querySelector('.message-subject').innerHTML = message.subject;
     document.querySelector('.message-timestamp').innerHTML = message.timestamp;
-    document.querySelector('.message-body').innerHTML = message.body;
-  });
+    document.querySelector('.message-body').innerHTML = message.body; })
+  .then(markAsRead(id));
+}
 
+
+function markAsRead(id) {
+  console.log("marking as read");
+  fetch(`/emails/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify({
+        read: true
+    })
+  });
+}
+
+function markAsUnread(id) {
+  fetch(`/emails/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify({
+        read: false
+    })
+  });
 }
