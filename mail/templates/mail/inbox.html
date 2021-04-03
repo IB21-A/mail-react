@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block body %}
-    <h2>{{ request.user.email }}</h2>
+    <h2 id="user-email">{{ request.user.email }}</h2>
 
     <button class="btn btn-sm btn-outline-primary" id="inbox">Inbox</button>
     <button class="btn btn-sm btn-outline-primary" id="compose">Compose</button>
@@ -19,7 +19,11 @@
         <br><span class="bold">To: </span><span class="message-to"></span>
         <br><span class="bold">Subject: </span><span class="message-subject"></span>
         <br><span class="bold">Timestamp: </span><span class="message-timestamp"></span>
-        <br><button class="btn btn-sm btn-outline-primary" id="reply">Reply</button>
+        <div id="email-actions">
+            <button class="btn btn-sm btn-outline-primary" id="reply">Reply</button>
+            <button id="toggle-read-status" class="btn btn-sm btn-link">Mark as Unread</button>
+            <button id="toggle-archive-status" class="btn btn-sm btn-link">Add to Archive</button>
+        </div>
         <hr>
         <br><div class="message-body"></div>
     </div>

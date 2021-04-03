@@ -7,17 +7,17 @@ document.addEventListener('DOMContentLoaded', function() {
   document.querySelector('#compose').addEventListener('click', compose_email);
 
   // Add click event listener to email send button
-  document.querySelector('#send-email').addEventListener('click', send_email);
+  document.querySelector('#compose-form').addEventListener('submit', event => send_email(event));
 
   // By default, load the inbox
   load_mailbox('inbox');
 });
 
+
 function compose_email() {
 
   // Show compose view and hide other views
-  document.querySelector('#emails-view').style.display = 'none';
-  document.querySelector('#message-view').style.display = 'none';
+  clear_views();
   document.querySelector('#compose-view').style.display = 'block';
 
   // Clear out composition fields
@@ -26,8 +26,9 @@ function compose_email() {
   document.querySelector('#compose-body').value = '';
 }
 
-function send_email() {
-  
+function send_email(event) {
+  event.preventDefault();
+
   fetch('/emails', {
     method: 'POST',
     body: JSON.stringify({
@@ -40,20 +41,19 @@ function send_email() {
   .then(result => {
       // Print result
       console.log(result);
-  });
+  })
+  .then(load_mailbox('sent'));
 }
 
 function load_mailbox(mailbox) {
   
   // Show the mailbox and hide other views
+  clear_views();
   document.querySelector('#emails-view').style.display = 'block';
-  document.querySelector('#message-view').style.display = 'none';
-  document.querySelector('#compose-view').style.display = 'none';
 
   // Show the mailbox name
   document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
 
-  // TODO (need to separate these later by button press)
   // Get emails 
   console.log('mailbox type: ', mailbox);
   fetch(`emails/${mailbox}`)
@@ -81,7 +81,6 @@ function list_email(email) {
   `
   
   message.addEventListener('click', () => {
-    console.log('CLICK!');
     load_message(email.id);
   });
 
@@ -89,11 +88,14 @@ function list_email(email) {
 }
 
 function load_message(id) {
-  document.querySelector('#emails-view').style.display = 'none';
-  document.querySelector('#message-view').style.display = 'block';
-  document.querySelector('#compose-view').style.display = 'none';
+  // Clear other views and show message view
+  clear_views();
+  document.querySelector('#message-view').style.display = 'block';  
 
- 
+  
+  document.querySelector('#toggle-read-status').onclick = () => {
+    toggleReadStatus(id);
+  };
 
   fetch(`emails/${id}`)
   .then(response => response.json())
@@ -102,26 +104,110 @@ function load_message(id) {
     document.querySelector('.message-to').innerHTML = message.recipients;
     document.querySelector('.message-subject').innerHTML = message.subject;
     document.querySelector('.message-timestamp').innerHTML = message.timestamp;
-    document.querySelector('.message-body').innerHTML = message.body; })
-  .then(markAsRead(id));
+    document.querySelector('.message-body').innerHTML = message.body; 
+    markAsRead(message.id);
+    populateOrHideArchiveButton(message);
+  });
+}
+
+function populateOrHideArchiveButton(message) {
+  let userEmail = document.querySelector('#user-email').innerHTML;
+  archiveButton = document.querySelector('#toggle-archive-status');
+
+  if (message.sender !== userEmail) {
+    archiveButton.style.display = 'inline-block';
+    archiveButton.innerHTML = 'Add to Archive';
+    if (message.archived) 
+      archiveButton.innerHTML = 'Remove from Archive';
+
+    archiveButton.onclick = () => toggleArchiveStatus(message.id);
+
+    return;
+  }
+
+  archiveButton.style.display = 'none';
+}
+
+function clear_views() {
+  document.querySelector('#emails-view').style.display = 'none';
+  document.querySelector('#message-view').style.display = 'none';
+  document.querySelector('#compose-view').style.display = 'none';
 }
 
 
+// Read status toggle functions
+
+function toggleReadStatus(id) {
+  fetch(`emails/${id}`)
+  .then(response => response.json())
+  .then(message => {
+    if (message.read) {
+      markAsUnread(id);
+      return;
+    }
+    markAsRead(id);
+    return;  
+  });
+}
+
 function markAsRead(id) {
-  console.log("marking as read");
+  console.log(`marking ${id} as read`);
   fetch(`/emails/${id}`, {
     method: 'PUT',
     body: JSON.stringify({
         read: true
     })
-  });
+  })
+  .then(document.querySelector('#toggle-read-status').innerHTML = 'Mark as Unread');
 }
 
 function markAsUnread(id) {
+  console.log(`marking ${id} as unread`);
   fetch(`/emails/${id}`, {
     method: 'PUT',
     body: JSON.stringify({
         read: false
     })
+  })
+  .then(document.querySelector('#toggle-read-status').innerHTML = 'Mark as Read');
+}
+
+// Archive Toggle Functions
+
+function toggleArchiveStatus(id) {
+  fetch(`emails/${id}`)
+  .then(response => response.json())
+  .then(message => {
+    if (message.archived) {
+      return removeFromArchive(id);
+    }
+
+    return addToArchive(id);
   });
+}
+
+async function addToArchive(id) {
+  console.log(`adding ${id} to archive`);
+
+  const toggle = await fetch(`/emails/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify({
+        archived: true
+    })
+  });
+
+  toggle.then(load_mailbox('inbox'));
+}
+
+async function removeFromArchive(id) {
+  console.log(`removing ${id} from archive`);
+
+  const toggle = await fetch(`/emails/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify({
+        archived: false
+    })
+  });
+
+  toggle.then(load_mailbox('inbox'));
 }
