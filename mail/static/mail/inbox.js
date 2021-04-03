@@ -43,11 +43,13 @@ function populateReply(id) {
 			// document.querySelector('.message-from').value = getUserEmail(); // Not necessary, already in the django template
 			document.querySelector("#compose-recipients").value =
 				message.sender;
-			document.querySelector("#compose-subject").value =
-				"Re: " + message.subject;
-			document.querySelector(
-				"#compose-body"
-			).value = `On ${message.timestamp} ${message.sender} wrote:\n${message.body}`;
+      
+      const re = /((re:*|Re:*|RE:*|re:*)+(\s)*)+/;
+      formattedSubject = 'Re: ' + message.subject.replace(re,''); // Eliminates extraneous Re:
+
+			document.querySelector("#compose-subject").value = formattedSubject;
+			document.querySelector("#compose-body").value = 
+        `On ${message.timestamp} ${message.sender} wrote:\n${message.body}`;
 		});
 }
 
