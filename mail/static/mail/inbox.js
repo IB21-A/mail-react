@@ -20,14 +20,19 @@ function compose_email() {
   clear_views();
   document.querySelector('#compose-view').style.display = 'block';
 
-  // Clear out composition fields
+  // Populate or clear out composition fields
+  clearCompositionFields();
+
+}
+
+function clearCompositionFields() {
   document.querySelector('#compose-recipients').value = '';
   document.querySelector('#compose-subject').value = '';
   document.querySelector('#compose-body').value = '';
 }
 
 function send_email(event) {
-  event.preventDefault();
+  event.preventDefault(); // prevents form submission reloading current page
 
   fetch('/emails', {
     method: 'POST',
@@ -183,31 +188,38 @@ function toggleArchiveStatus(id) {
     }
 
     return addToArchive(id);
-  });
+  })
+  .then(load_mailbox('inbox'));
+  
 }
 
-async function addToArchive(id) {
+function addToArchive(id) {
   console.log(`adding ${id} to archive`);
 
-  const toggle = await fetch(`/emails/${id}`, {
+  fetch(`/emails/${id}`, {
     method: 'PUT',
     body: JSON.stringify({
         archived: true
     })
+  })
+  .then(response => {
+    if (response.status === 204)
+      load_mailbox('inbox');
   });
+  
 
-  toggle.then(load_mailbox('inbox'));
 }
 
-async function removeFromArchive(id) {
+function removeFromArchive(id) {
   console.log(`removing ${id} from archive`);
 
-  const toggle = await fetch(`/emails/${id}`, {
+  fetch(`/emails/${id}`, {
     method: 'PUT',
     body: JSON.stringify({
         archived: false
     })
+  }).then(response => {
+    if (response.status === 204)
+      load_mailbox('inbox');
   });
-
-  toggle.then(load_mailbox('inbox'));
 }
