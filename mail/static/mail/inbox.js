@@ -118,11 +118,10 @@ function load_message(id) {
 	document.querySelector("#message-view").style.display = "block";
 
 	document.querySelector("#reply").onclick = () => compose_email(id);
-	document.querySelector("#toggle-read-status").onclick = () => {
-		toggleReadStatus(id);
-	};
 
 	displayMessage(id);
+  markAsRead(id);
+
 }
 
 function displayMessage(id) {
@@ -138,12 +137,10 @@ function displayMessage(id) {
 				message.timestamp;
 
 			formattedMessage = message.body.split("\n").join("<br>");
-			document.querySelector(
-				".message-body"
-			).innerHTML = formattedMessage;
+			document.querySelector(".message-body").innerHTML = formattedMessage;
 
-			markAsRead(message.id);
-			populateOrHideArchiveButton(message);
+      populateOrHideArchiveButton(message);
+	    populateOrHideReadButton(message);
 		});
 }
 
@@ -164,6 +161,21 @@ function populateOrHideArchiveButton(message) {
 	}
 
 	archiveButton.style.display = "none";
+}
+
+function populateOrHideReadButton(message) {
+	let userEmail = getUserEmail();
+	readToggleButton = document.querySelector("#toggle-read-status");
+
+	// Only display the ability toggle unread on a message that was sent to the user by someone other than the user
+	if (message.sender !== userEmail) {
+		readToggleButton.style.display = "inline-block";
+		readToggleButton.onclick = () => { toggleReadStatus(message.id);};
+		return;
+	}
+
+  
+	readToggleButton.style.display = "none";
 }
 
 function clear_views() {
