@@ -67,12 +67,12 @@ function send_email(event) {
 		.then((response) => response.json())
 		.then((result) => {
 			// Print result
-			console.log(result);
 			load_mailbox("sent");
 		});
 }
 
 function load_mailbox(mailbox) {
+  window.currentMailbox = mailbox;
 	// Show the mailbox and hide other views
 	clear_views();
 	document.querySelector("#emails-view").style.display = "block";
@@ -83,14 +83,12 @@ function load_mailbox(mailbox) {
 	}</h3>`;
 
 	// Get emails
-	console.log("mailbox type: ", mailbox);
 	fetch(`emails/${mailbox}`)
 		.then((response) => response.json())
 		.then((emails) => {
 			emails.forEach((email) => {
 				list_email(email);
 			});
-			console.log(emails);
 		});
 }
 
@@ -150,7 +148,7 @@ function populateOrHideArchiveButton(message) {
 
 	// Only display the ability archive a message that was sent to the user by someone other than the user
 	// After that, update appropriate message for archive toggle button
-	if (message.sender !== userEmail) {
+	if (window.currentMailbox !== 'sent') {
 		archiveButton.style.display = "inline-block";
 		archiveButton.innerHTML = "Add to Archive";
 		if (message.archived) archiveButton.innerHTML = "Remove from Archive";
@@ -168,7 +166,7 @@ function populateOrHideReadButton(message) {
 	readToggleButton = document.querySelector("#toggle-read-status");
 
 	// Only display the ability toggle unread on a message that was sent to the user by someone other than the user
-	if (message.sender !== userEmail) {
+	if (window.currentMailbox !== 'sent') {
 		readToggleButton.style.display = "inline-block";
 		readToggleButton.onclick = () => { toggleReadStatus(message.id);};
 		return;
