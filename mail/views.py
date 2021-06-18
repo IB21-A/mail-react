@@ -147,6 +147,29 @@ def login_view(request):
         return render(request, "mail/login.html")
 
 
+# API view
+def login_api(request):
+    if request.method == "POST":
+
+        # Attempt to sign user in
+        email = request.POST["email"]
+        password = request.POST["password"]
+        user = authenticate(request, username=email, password=password)
+
+        # Check if authentication successful
+        if user is not None:
+            login(request, user)
+            return JsonResponse({"message": "Logged in successfully."}, status=201)
+        else:
+            return JsonResponse({"message": "Login Failed."}, status=400)
+    else:
+        return JsonResponse({"message": "POST method required"}, status=400)
+
+
+def api_test(request):
+    return JsonResponse({"message": "Success message from the API_test route"}, status=201)
+
+
 def logout_view(request):
     logout(request)
     return HttpResponseRedirect(reverse("index"))
