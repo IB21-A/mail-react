@@ -154,7 +154,7 @@ def login_api(request):
     if request.method == "POST":
         data = json.loads(request.body)
         print(data)
-
+        # fetch("http://localhost:8000/api/login", {method: "POST", body:JSON.stringify({email:"testUser@cs50.com", password:"6e72a5a473"})}).then(response => response.json()).then(result => (console.log(result)))
         # Attempt to sign user in
         # email = "testUser@cs50.com"
         # password = "6e72a5a473"
