@@ -128,6 +128,7 @@ def email(request, email_id):
 
 
 def login_view(request):
+
     if request.method == "POST":
 
         # Attempt to sign user in
@@ -148,12 +149,17 @@ def login_view(request):
 
 
 # API view
+@csrf_exempt
 def login_api(request):
     if request.method == "POST":
+        data = json.loads(request.body)
+        print(data)
 
         # Attempt to sign user in
-        email = request.POST["email"]
-        password = request.POST["password"]
+        # email = "testUser@cs50.com"
+        # password = "6e72a5a473"
+        email = data.get("email")
+        password = data.get("password")
         user = authenticate(request, username=email, password=password)
 
         # Check if authentication successful
@@ -166,6 +172,7 @@ def login_api(request):
         return JsonResponse({"message": "POST method required"}, status=400)
 
 
+@csrf_exempt
 def api_test(request):
     return JsonResponse({"message": "Success message from the API_test route"}, status=201)
 
