@@ -1,11 +1,15 @@
 import json
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from rest_framework.decorators import api_view, permission_classes
 from django.db import IntegrityError
 from django.http import JsonResponse
 from django.shortcuts import HttpResponse, HttpResponseRedirect, render
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .models import User, Email
 
@@ -21,8 +25,8 @@ def index(request):
         return HttpResponseRedirect(reverse("login"))
 
 
-@csrf_exempt
-@login_required
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def compose(request):
 
     # Composing a new email must be via POST
@@ -31,12 +35,15 @@ def compose(request):
 
     # Check recipient emails
     data = json.loads(request.body)
+    print(data)
     emails = [email.strip() for email in data.get("recipients").split(",")]
+    print('got emails')
     if emails == [""]:
         return JsonResponse({
             "error": "At least one recipient required."
         }, status=400)
 
+    print('getting users')
     # Convert email addresses to users
     recipients = []
     for email in emails:
@@ -47,11 +54,11 @@ def compose(request):
             return JsonResponse({
                 "error": f"User with email {email} does not exist."
             }, status=400)
-
+    print('got users')
     # Get contents of email
     subject = data.get("subject", "")
     body = data.get("body", "")
-
+    print('create emails')
     # Create one email for each recipient, plus sender
     users = set()
     users.add(request.user)
@@ -64,17 +71,20 @@ def compose(request):
             body=body,
             read=user == request.user
         )
+        print('save email')
         email.save()
         for recipient in recipients:
             email.recipients.add(recipient)
+        print('save email again')
         email.save()
 
     return JsonResponse({"message": "Email sent successfully."}, status=201)
 
 
-@login_required
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def mailbox(request, mailbox):
-
+    print(request.user)
     # Filter emails returned based on mailbox
     if mailbox == "inbox":
         emails = Email.objects.filter(
@@ -97,9 +107,10 @@ def mailbox(request, mailbox):
 
 
 @csrf_exempt
-@login_required
+@api_view(['GET', 'PUT'])
+@permission_classes([IsAuthenticated])
 def email(request, email_id):
-
+    print(request)
     # Query for requested email
     try:
         email = Email.objects.get(user=request.user, pk=email_id)
@@ -115,6 +126,7 @@ def email(request, email_id):
         data = json.loads(request.body)
         if data.get("read") is not None:
             email.read = data["read"]
+            print(f"Marked {email.read}")
         if data.get("archived") is not None:
             email.archived = data["archived"]
         email.save()
@@ -207,3 +219,17 @@ def register(request):
         return HttpResponseRedirect(reverse("index"))
     else:
         return render(request, "mail/register.html")
+
+
+class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+
+        # Add custom claims
+        token['username'] = user.username
+        return token
+
+
+class MyTokenObtainPairView(TokenObtainPairView):
+    serializer_class = MyTokenObtainPairSerializer
