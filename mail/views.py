@@ -1,13 +1,17 @@
 import json
+from mail.serializers import CustomUserSerializer
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from rest_framework.decorators import api_view, permission_classes
 from django.db import IntegrityError
 from django.http import JsonResponse
 from django.shortcuts import HttpResponse, HttpResponseRedirect, render
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status, permissions
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 
@@ -166,10 +170,7 @@ def login_api(request):
     if request.method == "POST":
         data = json.loads(request.body)
         print(data)
-        # fetch("http://localhost:8000/api/login", {method: "POST", body:JSON.stringify({email:"testUser@cs50.com", password:"6e72a5a473"})}).then(response => response.json()).then(result => (console.log(result)))
-        # Attempt to sign user in
-        # email = "testUser@cs50.com"
-        # password = "6e72a5a473"
+
         email = data.get("email")
         password = data.get("password")
         user = authenticate(request, username=email, password=password)
@@ -194,31 +195,38 @@ def logout_view(request):
     return HttpResponseRedirect(reverse("index"))
 
 
+@api_view(['POST'])
+@permission_classes([AllowAny])
 def register(request):
-    if request.method == "POST":
-        email = request.POST["email"]
+    data = json.loads(request.body)
+    print(data)
+    email = data["email"]
 
-        # Ensure password matches confirmation
-        password = request.POST["password"]
-        confirmation = request.POST["confirmation"]
-        if password != confirmation:
-            return render(request, "mail/register.html", {
-                "message": "Passwords must match."
-            })
+    # Ensure password matches confirmation
+    password = data["password"]
+    confirmation = data["confirmation"]
+    if password != confirmation:
+        return JsonResponse(data={"message": "Passwords must match."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Attempt to create new user
-        try:
-            user = User.objects.create_user(email, email, password)
-            user.save()
-        except IntegrityError as e:
-            print(e)
-            return render(request, "mail/register.html", {
-                "message": "Email address already taken."
-            })
-        login(request, user)
-        return HttpResponseRedirect(reverse("index"))
-    else:
-        return render(request, "mail/register.html")
+    # Attempt to create new user
+    try:
+        user = User.objects.create_user(email, email, password)
+        user.save()
+    except IntegrityError as e:
+        print(e)
+        return JsonResponse(data={"message": "Email address already taken."}, status=status.HTTP_400_BAD_REQUEST)
+
+    return JsonResponse(data={"message": "User created successfully"},status=status.HTTP_201_CREATED)
+
+
+# @api_view(['POST'])
+# @permission_classes([AllowAny])
+# def RegisterNewUser(request):
+#     serializer = CustomUserSerializer(data=request.data)
+#     if serializer.is_valid():
+#         user = serializer.save()
+#         if user:
+#             json = serializer.data
 
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
