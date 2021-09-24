@@ -199,7 +199,6 @@ def logout_view(request):
 @permission_classes([AllowAny])
 def register(request):
     data = json.loads(request.body)
-    print(data)
     email = data["email"]
 
     # Ensure password matches confirmation
@@ -214,9 +213,10 @@ def register(request):
         user.save()
     except IntegrityError as e:
         print(e)
-        return JsonResponse(data={"message": "Email address already taken."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(data={"message": "Email address already taken."}, status=status.HTTP_403_FORBIDDEN)
+        return JsonResponse(status=status.HTTP_403_FORBIDDEN, data={"message": "Email address already taken."}, )
 
-    return JsonResponse(data={"message": "User created successfully"},status=status.HTTP_201_CREATED)
+    return JsonResponse(data={"message": "User created successfully"}, status=status.HTTP_201_CREATED)
 
 
 # @api_view(['POST'])
