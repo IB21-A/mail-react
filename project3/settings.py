@@ -29,8 +29,9 @@ SECRET_KEY = str(os.getenv('SECRET_KEY'))
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['mail-thom.herokuapp.com']
-CORS_ALLOWED_ORIGINS = ['https://mail-thom.herokuapp.com']
+ALLOWED_HOSTS = ['mail-thom.herokuapp.com', '127.0.0.1']
+CORS_ALLOWED_ORIGINS = [
+    'https://mail-thom.herokuapp.com', "http://localhost:3000", "http://127.0.0.1:8000", ]
 
 # Application definition
 
@@ -65,7 +66,7 @@ ROOT_URLCONF = 'project3.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'frontend/build')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -133,6 +134,9 @@ STATIC_URL = '/static/'
 # According to whitenoise docs, we must specify a STATIC_ROOT
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'frontend/build/static')
+]
 # Rest Framework
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
