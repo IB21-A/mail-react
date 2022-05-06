@@ -1,1 +1,1 @@
-web: gunicorn mail-jwt.wsgi
+web: gunicorn project3.wsgi
