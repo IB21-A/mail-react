@@ -27,8 +27,8 @@ SECRET_KEY = str(os.getenv('SECRET_KEY'))
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['your-app-name.herokuapp.com']
-CORS_ALLOWED_ORIGINS = ['https://your-frontend-app-name.herokuapp.com']
+ALLOWED_HOSTS = ['mail-thom.herokuapp.com']
+CORS_ALLOWED_ORIGINS = ['https://mail-thom.herokuapp.com']
 
 # Application definition
 
@@ -49,6 +49,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -127,6 +128,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
+# According to whitenoise docs, we must specify a STATIC_ROOT
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Rest Framework
 REST_FRAMEWORK = {
