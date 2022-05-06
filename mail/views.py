@@ -218,7 +218,7 @@ def logout_view(request):
 @permission_classes([AllowAny])
 def register(request):
     data = json.loads(request.body)
-    email = data["email"]
+    email = data["email"].lower()
 
     # Ensure password matches confirmation
     password = data["password"]
