@@ -6,7 +6,7 @@ A simulated Web Mail application that allows users to register/login, compose, s
 
 This application was previously built using vanilla Django with Django's template engine for the front end with vanilla javascript and css.
 
-The application now utilizes a Django REST Framework API that the React front end can fetch data from. The application has been deployed as one unified project. The React front-end can be seen [here](https://github.com/IB21-A/mail-jwt-frontend)
+The application now utilizes a Django REST Framework API that the React front end can fetch data from. The application has been deployed as one unified project. The React front-end can be seen [here](https://github.com/IB21-A/mail-react-frontend)
 
 ### What's Different?
 
