@@ -7,7 +7,6 @@ from rest_framework_simplejwt import views as jwt_views
 urlpatterns = [
 
     # API Routes
-    path("test", views.api_test, name="api_test"),
     path("register/", views.register, name="register"),
     path("emails/compose/", views.compose, name="compose"),
     path("emails/edit/<int:email_id>", views.email, name="email"),
