@@ -1,5 +1,7 @@
 from .models import User, Email
 
+# Quick and dirty method to auto populate a new user's inbox with example unread, sent, and archived messages
+
 
 def populateNewUserMailbox(newUser):
     thom = User.objects.get(email__iexact="thom@thomcodes.com")
