@@ -11,9 +11,9 @@ urlpatterns = [
     path("emails/compose/", views.compose, name="compose"),
     path("emails/edit/<int:email_id>", views.email, name="email"),
     path("emails/get/<int:email_id>", views.email, name="email"),
-    path("emails/<str:mailbox>/", views.mailbox, name="mailbox"),
     path("emails/delete/<int:email_id>",
          views.delete_email, name="delete_email"),
+    path("emails/<str:mailbox>/", views.mailbox, name="mailbox"),
 
     # Token Routes
     path('token/', views.MyTokenObtainPairView.as_view(),
