@@ -159,11 +159,47 @@ def register(request):
     try:
         user = User.objects.create_user(email, email, password)
         user.save()
+        populateNewUserMailbox(user)
     except IntegrityError as e:
         print(e)
         return Response(data={"message": "Email address already taken."}, status=status.HTTP_403_FORBIDDEN)
 
     return JsonResponse(data={"message": "User created successfully"}, status=status.HTTP_201_CREATED)
+
+
+def populateNewUserMailbox(user):
+
+    demo_emails = [
+        {
+            "sender": "thom@thomcodes.com",
+            "recipients": user,
+            "subject":
+            "Welcome to the Webmail application!",
+            "body": "Hey there!\nThanks for stopping by and checking out my application. Feel free to poke around. Reply to this email and let me know you were here!\nBest,\nThom"
+        },
+        {
+            "sender": user,
+            "recipients":
+            "thom@thomcodes.com",
+            "subject": "Wow! Such a cool app!",
+            "body": "Hey Thom,\nYou did some really cool stuff here! I love that when you respond to a message, it doesn't fill in tons of \"Re: Re: Re: Re: \" but just has one. Did you use Regular Expressions for that?\nPretty cool that messages are marked as read with a different color in the inbox, and I can mark them as unread again from the message. I love that I can see my sent messages too! You did a great job, I can't wait to hire you ;)\nBest,\nThe Hiring Manager"
+        }
+    ]
+
+    thom = User.objects.get(email__iexact="thom@thomcodes.com")
+    for message in demo_emails:
+        users = set()
+        users.add(user)
+        users.add(thom)
+        for person in users:
+            email = Email(
+                user=person,
+                sender=message.get('sender'),
+                subject=message.get('subject'),
+                body=message.get('body'),
+                read=person == user
+            )
+            email.save()
 
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
