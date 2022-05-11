@@ -98,6 +98,9 @@ def mailbox(request, mailbox):
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def delete_email(request, email_id):
+    if request.method != "DELETE":
+        return JsonResponse({"error": "DELETE request required"}, status=404)
+
     # Query for requested email
     try:
         email = Email.objects.get(pk=email_id)
@@ -105,11 +108,9 @@ def delete_email(request, email_id):
         return JsonResponse({"error": "Email not found."}, status=404)
 
     # Return email contents
-    if request.method == "DELETE":
-        email.delete()
-        JsonResponse({"message": "Email deleted successfully."}, status=201)
 
-    return JsonResponse({"error": "DELETE request required"}, status=404)
+    email.delete()
+    JsonResponse({"message": "Email deleted successfully."}, status=201)
 
 
 @csrf_exempt
