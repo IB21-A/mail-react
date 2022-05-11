@@ -103,7 +103,7 @@ def delete_email(request, email_id):
 
     # Query for requested email
     try:
-        email = Email.objects.get(pk=email_id)
+        email = Email.objects.get(id=email_id)
     except Email.DoesNotExist:
         return JsonResponse({"error": "Email not found."}, status=404)
 
