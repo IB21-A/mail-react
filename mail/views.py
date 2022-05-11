@@ -99,7 +99,7 @@ def mailbox(request, mailbox):
 @permission_classes([IsAuthenticated])
 def delete_email(request, email_id):
     if request.method != "DELETE":
-        return JsonResponse({"error": "DELETE request required"}, status=404)
+        return JsonResponse({"error": "DELETE request required"}, status=400)
 
     # Query for requested email
     try:
