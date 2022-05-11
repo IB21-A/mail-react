@@ -44,9 +44,9 @@ def populateNewUserMailbox(newUser):
         subject="Archived Email",
         body="Here is an example of an archived Email!",
         read=True,
-        archived=True
     )
 
     email.save()
     email.recipients.add(newUser)
+    email.archived = True
     email.save()
